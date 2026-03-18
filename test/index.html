@@ -11,51 +11,129 @@
       width: 100%;
       height: 100%;
       background: #000;
-      color: #f5f5f5;
-      font-family: "Courier New", Courier, monospace;
       overflow: hidden;
+      font-family: "Courier New", Courier, monospace;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     #radio-intro {
       position: relative;
       width: 100%;
       height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      background: #000;
+      background:
+        radial-gradient(circle at center, rgba(40, 255, 140, 0.08) 0%, rgba(0, 0, 0, 0) 55%),
+        #000;
+      overflow: hidden;
     }
 
-    #static {
+    /* Soft CRT glow */
+    #radio-intro::before {
+      content: "";
       position: absolute;
       inset: 0;
+      background: radial-gradient(circle at center, rgba(40, 255, 140, 0.08), rgba(0, 0, 0, 0) 70%);
       pointer-events: none;
-      opacity: 0.18;
+      z-index: 1;
+    }
+
+    /* Scanlines */
+    #scanlines {
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0) 0px,
+          rgba(0, 0, 0, 0) 2px,
+          rgba(40, 255, 140, 0.06) 3px,
+          rgba(0, 0, 0, 0) 4px
+        );
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Flicker/noise layer */
+    #noise {
+      position: absolute;
+      inset: 0;
+      opacity: 0.12;
       background-image:
         repeating-linear-gradient(
           0deg,
-          rgba(255,255,255,0.05) 0px,
-          rgba(255,255,255,0.05) 1px,
-          transparent 1px,
-          transparent 3px
+          rgba(255,255,255,0.10) 0px,
+          rgba(255,255,255,0.02) 1px,
+          transparent 2px,
+          transparent 4px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,0.03) 0px,
+          transparent 2px,
+          rgba(255,255,255,0.02) 3px,
+          transparent 5px
         );
-      animation: flicker 0.12s infinite;
+      mix-blend-mode: screen;
+      animation: flicker 0.16s infinite steps(2);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* Slow sweep line */
+    #sweep {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: linear-gradient(
+        to bottom,
+        rgba(40,255,140,0),
+        rgba(40,255,140,0.06),
+        rgba(40,255,140,0)
+      );
+      animation: sweep 6s linear infinite;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    #content {
+      position: relative;
+      z-index: 5;
+      width: min(980px, 90vw);
+      margin: 0 auto;
+      text-align: center;
+      color: #7CFFB2;
+      text-shadow:
+        0 0 4px rgba(124,255,178,0.7),
+        0 0 10px rgba(124,255,178,0.25);
+      padding: 40px 24px;
+    }
+
+    #dispatch-label {
+      font-size: 14px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      opacity: 0.6;
+      margin-bottom: 28px;
     }
 
     #dispatch-text {
-      position: relative;
-      z-index: 2;
-      max-width: 900px;
-      padding: 24px;
-      font-size: clamp(24px, 3vw, 42px);
-      line-height: 1.35;
-      letter-spacing: 0.1em;
+      font-size: clamp(24px, 3.2vw, 44px);
+      line-height: 1.4;
+      letter-spacing: 0.10em;
       text-transform: uppercase;
+      min-height: 3.2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       opacity: 0;
       transform: scale(0.985);
-      transition: opacity 0.45s ease, transform 0.45s ease;
-      text-shadow: 0 0 8px rgba(255,255,255,0.18);
+      transition: opacity 0.4s ease, transform 0.4s ease;
     }
 
     #dispatch-text.show {
@@ -63,31 +141,44 @@
       transform: scale(1);
     }
 
-    #corner-tag {
+    #footer-tag {
       position: absolute;
       bottom: 18px;
-      right: 22px;
-      z-index: 2;
+      right: 24px;
+      z-index: 5;
+      color: rgba(124,255,178,0.55);
       font-size: 12px;
-      letter-spacing: 0.16em;
-      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.18em;
       text-transform: uppercase;
+      text-shadow: 0 0 6px rgba(124,255,178,0.25);
     }
 
     @keyframes flicker {
-      0% { opacity: 0.10; }
-      20% { opacity: 0.16; }
-      50% { opacity: 0.23; }
-      80% { opacity: 0.14; }
-      100% { opacity: 0.12; }
+      0% { opacity: 0.09; }
+      25% { opacity: 0.14; }
+      50% { opacity: 0.08; }
+      75% { opacity: 0.16; }
+      100% { opacity: 0.11; }
+    }
+
+    @keyframes sweep {
+      0% { top: -90px; }
+      100% { top: 100%; }
     }
   </style>
 </head>
 <body>
   <div id="radio-intro">
-    <div id="static"></div>
-    <div id="dispatch-text">Dispatch: 8 Lincoln 30...</div>
-    <div id="corner-tag">monitor channel</div>
+    <div id="scanlines"></div>
+    <div id="noise"></div>
+    <div id="sweep"></div>
+
+    <div id="content">
+      <div id="dispatch-label">LAPD DISPATCH CHANNEL</div>
+      <div id="dispatch-text">Dispatch: Unit 2-5-4, check out Nakatomi Plaza.</div>
+    </div>
+
+    <div id="footer-tag">8 Lincoln 30</div>
   </div>
 
   <script>
@@ -96,16 +187,23 @@
 
       setTimeout(() => {
         text.classList.add("show");
-      }, 400);
+      }, 300);
 
       setTimeout(() => {
-        text.textContent = "Dispatch: shots fired. I repeat, shots fired.";
-      }, 2200);
+        text.textContent = "Powell: Dispatch, this is 2-5-4. I'm outside Nakatomi Plaza. Everything looks normal.";
+      }, 2600);
+
+      setTimeout(() => {
+        text.textContent = "Powell: Shots fired! I repeat, shots fired!";
+      }, 6200);
 
       setTimeout(() => {
         text.textContent = "8 Lincoln 30";
-      }, 4300);
+      }, 9200);
     });
+  </script>
+</body>
+</html>
   </script>
 </body>
 </html>
